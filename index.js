@@ -24,6 +24,12 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     const usersCollection = client.db("summerCamp").collection("users");
+    const popularClassesCollection = client
+      .db("summerCamp")
+      .collection("popularClasses");
+    const popularInstructorsCollection = client
+      .db("summerCamp")
+      .collection("popularInstructors");
 
     // users related apis -----------------------
 
@@ -38,6 +44,17 @@ async function run() {
       };
       const result = await usersCollection.updateOne(query, updateDoc, options);
       //   console.log(result);
+      res.send(result);
+    });
+
+    // popular classes related apis ------------------
+    app.get("/popularClasses", async (req, res) => {
+      const result = await popularClassesCollection.find().toArray();
+      res.send(result);
+    });
+
+    app.get("/popularInstructors", async (req, res) => {
+      const result = await popularInstructorsCollection.find().toArray();
       res.send(result);
     });
 
