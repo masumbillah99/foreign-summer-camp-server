@@ -24,6 +24,7 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     const usersCollection = client.db("summerCamp").collection("users");
+    const classesCollection = client.db("summerCamp").collection("classes");
     const popularClassesCollection = client
       .db("summerCamp")
       .collection("popularClasses");
@@ -43,7 +44,21 @@ async function run() {
         $set: user,
       };
       const result = await usersCollection.updateOne(query, updateDoc, options);
-      //   console.log(result);
+      res.send(result);
+    });
+
+    // classes related apis -----------
+    // get all class
+    app.get("/classes", async (req, res) => {
+      const result = await classesCollection.find().toArray();
+      res.send(result);
+    });
+
+    // save a class in database
+    app.post("/classes", async (req, res) => {
+      const classData = req.body;
+      // console.log(req.body);
+      const result = await classesCollection.insertOne(classData);
       res.send(result);
     });
 
