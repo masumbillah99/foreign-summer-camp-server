@@ -93,12 +93,34 @@ async function run() {
       res.send(result);
     });
 
-    // make admin
+    // make role admin
     app.patch("/users/admin/:id", async (req, res) => {
       const id = req.params.id;
       console.log(id);
       const filter = { _id: new ObjectId(id) };
       const updateDoc = { $set: { role: "admin" } };
+      const result = await usersCollection.updateOne(filter, updateDoc);
+      res.send(result);
+    });
+
+    /** instructor roles */
+    app.get("/users/instructor/:email", async (req, res) => {
+      const email = req.params.email;
+      // if (req.decoded.email !== email) {
+      //   res.send({ admin: false });
+      // }
+      const query = { email: email };
+      const user = await usersCollection.findOne(query);
+      const result = { instructor: user?.role === "instructor" };
+      console.log(result);
+      res.send(result);
+    });
+
+    // make role instructor
+    app.patch("/users/instructor/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updateDoc = { $set: { role: "instructor" } };
       const result = await usersCollection.updateOne(filter, updateDoc);
       res.send(result);
     });
