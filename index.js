@@ -56,9 +56,7 @@ async function run() {
   try {
     const usersCollection = client.db("summerCamp").collection("users");
     const classesCollection = client.db("summerCamp").collection("classes");
-    const popularInstructorsCollection = client
-      .db("summerCamp")
-      .collection("popularInstructors");
+    const cartCollection = client.db("summerCamp").collection("carts");
 
     //  JWT TOKEN secure
     app.post("/jwt", async (req, res) => {
@@ -159,6 +157,25 @@ async function run() {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
       const result = await usersCollection.deleteOne(filter);
+      res.send(result);
+    });
+
+    /** cart collection */
+    // get cart item from database
+    app.get("/carts", async (req, res) => {
+      const email = req.query.email;
+      if (!email) {
+        res.send([]);
+      }
+      const query = { email: email };
+      const result = await cartCollection.find(query).toArray();
+      res.send(result);
+    });
+
+    // add cart in database
+    app.post("/carts", async (req, res) => {
+      const item = req.body;
+      const result = await cartCollection.insertOne(item);
       res.send(result);
     });
 
