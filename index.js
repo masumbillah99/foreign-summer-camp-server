@@ -56,9 +56,6 @@ async function run() {
   try {
     const usersCollection = client.db("summerCamp").collection("users");
     const classesCollection = client.db("summerCamp").collection("classes");
-    const popularClassesCollection = client
-      .db("summerCamp")
-      .collection("popularClasses");
     const popularInstructorsCollection = client
       .db("summerCamp")
       .collection("popularInstructors");
@@ -89,7 +86,7 @@ async function run() {
       const query = { email: email };
       const user = await usersCollection.findOne(query);
       const result = { admin: user?.role === "admin" };
-      console.log(result);
+      // console.log(result);
       res.send(result);
     });
 
@@ -171,11 +168,20 @@ async function run() {
       res.send(result);
     });
 
-    // popular classes related apis ------------------
-    app.get("/popularClasses", async (req, res) => {
-      const result = await popularClassesCollection.find().toArray();
+    // get my classes based on email
+    app.get("/classes/:email", async (req, res) => {
+      const result = await classesCollection
+        .find({ email: req.params.email })
+        .toArray();
+      // console.log("ace", result);
       res.send(result);
     });
+
+    // popular classes related apis ------------------
+    // app.get("/popularClasses", async (req, res) => {
+    //   const result = await popularClassesCollection.find().toArray();
+    //   res.send(result);
+    // });
 
     app.get("/popularInstructors", async (req, res) => {
       const result = await popularInstructorsCollection.find().toArray();
