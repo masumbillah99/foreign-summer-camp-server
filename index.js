@@ -112,7 +112,7 @@ async function run() {
       const query = { email: email };
       const user = await usersCollection.findOne(query);
       const result = { instructor: user?.role === "instructor" };
-      console.log(result);
+      // console.log(result);
       res.send(result);
     });
 
@@ -157,6 +157,17 @@ async function run() {
       const classData = req.body;
       // console.log(req.body);
       const result = await classesCollection.insertOne(classData);
+      res.send(result);
+    });
+
+    // update add classes information
+    app.put("/classes/:id", async (req, res) => {
+      const id = req.params.id;
+      const classData = req.body;
+      const filter = { _id: new ObjectId(id) };
+      const updateDoc = { $set: { status: classData.status } };
+      const result = await classesCollection.updateOne(filter, updateDoc);
+      console.log("170", result);
       res.send(result);
     });
 
