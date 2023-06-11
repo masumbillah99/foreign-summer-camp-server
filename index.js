@@ -215,6 +215,17 @@ async function run() {
       res.send({ insertResult, deleteResult });
     });
 
+    // get payment history
+    app.get("/payments", verifyJWT, async (req, res) => {
+      const email = req.query.email;
+      if (!email) {
+        res.send([]);
+      }
+      const query = { email: email };
+      const result = await paymentCollection.find(query).toArray();
+      res.send(result);
+    });
+
     /** classes related apis ----------- */
     // get all class
     app.get("/classes", async (req, res) => {
