@@ -58,6 +58,7 @@ async function run() {
     const usersCollection = client.db("summerCamp").collection("users");
     const classesCollection = client.db("summerCamp").collection("classes");
     const cartCollection = client.db("summerCamp").collection("carts");
+    const paymentCollection = client.db("summerCamp").collection("payments");
 
     //  JWT TOKEN secure
     app.post("/jwt", async (req, res) => {
@@ -180,10 +181,20 @@ async function run() {
       res.send(result);
     });
 
+    // DELETE CART
+    app.delete("/carts/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await cartCollection.deleteOne(query);
+      res.send(result);
+    });
+
+    /** payments system -------------- */
     // create payment intent
     app.post("/create-payment-intent", async (req, res) => {
       const { price } = req.body;
       const amount = price * 100;
+      console.log(price, amount);
       const paymentIntent = await stripe.paymentIntents.create({
         amount: amount,
         currency: "usd",
@@ -192,12 +203,16 @@ async function run() {
       res.send({ clientSecret: paymentIntent.client_secret });
     });
 
-    // DELETE CART
-    app.delete("/carts/:id", async (req, res) => {
-      const id = req.params.id;
-      const query = { _id: new ObjectId(id) };
-      const result = await cartCollection.deleteOne(query);
-      res.send(result);
+    // store payment data to server
+    app.post("/payments", verifyJWT, async (req, res) => {
+      const paymentData = req.body;
+      const insertResult = await paymentCollection.insertOne(paymentData);
+      // delete cart items after payment
+      const query = {
+        _id: { $in: paymentData.cartItems.map((id) => new ObjectId(id)) },
+      };
+      const deleteResult = await cartCollection.deleteMany(query);
+      res.send({ insertResult, deleteResult });
     });
 
     /** classes related apis ----------- */
