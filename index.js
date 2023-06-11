@@ -3,6 +3,7 @@ const app = express();
 const cors = require("cors");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
+const stripe = require("stripe")(process.env.PAYMENT_SECRET_KEY);
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const port = process.env.PORT || 5000;
 
@@ -179,7 +180,15 @@ async function run() {
       res.send(result);
     });
 
-    // classes related apis -----------
+    // DELETE CART
+    app.delete("/carts/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await cartCollection.deleteOne(query);
+      res.send(result);
+    });
+
+    /** classes related apis ----------- */
     // get all class
     app.get("/classes", async (req, res) => {
       const result = await classesCollection.find().toArray();
