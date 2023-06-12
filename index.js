@@ -193,14 +193,15 @@ async function run() {
     // create payment intent
     app.post("/create-payment-intent", async (req, res) => {
       const { price } = req.body;
-      const amount = price * 100;
-      console.log(price, amount);
-      const paymentIntent = await stripe.paymentIntents.create({
-        amount: amount,
-        currency: "usd",
-        payment_method_types: ["card"],
-      });
-      res.send({ clientSecret: paymentIntent.client_secret });
+      if (price) {
+        const amount = parseFloat(price * 100);
+        const paymentIntent = await stripe.paymentIntents.create({
+          amount: amount,
+          currency: "usd",
+          payment_method_types: ["card"],
+        });
+        res.send({ clientSecret: paymentIntent.client_secret });
+      }
     });
 
     // store payment data to server
@@ -209,9 +210,10 @@ async function run() {
       const insertResult = await paymentCollection.insertOne(paymentData);
       // delete cart items after payment
       const query = {
-        _id: { $in: paymentData.cartItems.map((id) => new ObjectId(id)) },
+        _id: new ObjectId(paymentData._id),
       };
-      const deleteResult = await cartCollection.deleteMany(query);
+      const deleteResult = await cartCollection.deleteOne(query);
+      // console.log(deleteResult);
       res.send({ insertResult, deleteResult });
     });
 
@@ -253,24 +255,22 @@ async function run() {
     });
 
     // get my classes based on email
-    app.get("/classes/:email", async (req, res) => {
+    app.get("/classes/:email", verifyJWT, async (req, res) => {
       const result = await classesCollection
         .find({ email: req.params.email })
         .toArray();
-      // console.log("ace", result);
       res.send(result);
     });
 
-    // popular classes related apis ------------------
-    // app.get("/popularClasses", async (req, res) => {
-    //   const result = await popularClassesCollection.find().toArray();
+    // app.get("/classes/:text", async (req, res) => {
+    //   // const query = { status: "approved" };
+    //   // console.log(req.params.text);
+    //   const result = await classesCollection
+    //     .find({ status: req.params.text })
+    //     .toArray();
+    //   console.log("r", result);
     //   res.send(result);
     // });
-
-    app.get("/popularInstructors", async (req, res) => {
-      const result = await popularInstructorsCollection.find().toArray();
-      res.send(result);
-    });
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
