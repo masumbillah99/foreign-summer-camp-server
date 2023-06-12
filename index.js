@@ -231,7 +231,10 @@ async function run() {
     /** classes related apis ----------- */
     // get all class
     app.get("/classes", async (req, res) => {
-      const result = await classesCollection.find().toArray();
+      const query = {};
+      const options = { sort: { available_seat: -1 } };
+      const cursor = classesCollection.find(query, options);
+      const result = await cursor.toArray();
       res.send(result);
     });
 
