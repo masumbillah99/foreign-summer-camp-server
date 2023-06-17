@@ -50,6 +50,9 @@ async function run() {
     const classesCollection = client.db("summerCamp").collection("classes");
     const cartCollection = client.db("summerCamp").collection("carts");
     const paymentCollection = client.db("summerCamp").collection("payments");
+    const reviewCollection = client
+      .db("summerCamp")
+      .collection("studentReviews");
 
     //  JWT TOKEN secure
     app.post("/jwt", async (req, res) => {
@@ -251,6 +254,12 @@ async function run() {
       const result = await classesCollection
         .find({ email: req.params.email })
         .toArray();
+      res.send(result);
+    });
+
+    /** reviews related apis */
+    app.get("/reviews", async (req, res) => {
+      const result = await reviewCollection.find({}).toArray();
       res.send(result);
     });
 
