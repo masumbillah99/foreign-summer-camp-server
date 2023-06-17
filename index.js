@@ -33,15 +33,6 @@ const verifyJWT = (req, res, next) => {
   });
 };
 
-/**
- * const decodeEmail = req.decoded.email;
- * if(email !== decodedEmail) {
- *   return res
-        .status(403)
-        .send({ error: true, message: "Forbidden Access" });
- * }
-*/
-
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.og57wk2.mongodb.net/?retryWrites=true&w=majority`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -213,7 +204,6 @@ async function run() {
         _id: new ObjectId(paymentData._id),
       };
       const deleteResult = await cartCollection.deleteOne(query);
-      // console.log(deleteResult);
       res.send({ insertResult, deleteResult });
     });
 
@@ -241,7 +231,6 @@ async function run() {
     // save a class in database
     app.post("/classes", async (req, res) => {
       const classData = req.body;
-      // console.log(req.body);
       const result = await classesCollection.insertOne(classData);
       res.send(result);
     });
@@ -253,7 +242,7 @@ async function run() {
       const filter = { _id: new ObjectId(id) };
       const updateDoc = { $set: { status: classData.status } };
       const result = await classesCollection.updateOne(filter, updateDoc);
-      console.log("170", result);
+      // console.log("170", result);
       res.send(result);
     });
 
@@ -264,16 +253,6 @@ async function run() {
         .toArray();
       res.send(result);
     });
-
-    // app.get("/classes/:text", async (req, res) => {
-    //   // const query = { status: "approved" };
-    //   // console.log(req.params.text);
-    //   const result = await classesCollection
-    //     .find({ status: req.params.text })
-    //     .toArray();
-    //   console.log("r", result);
-    //   res.send(result);
-    // });
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
