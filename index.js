@@ -50,9 +50,7 @@ async function run() {
     const classesCollection = client.db("summerCamp").collection("classes");
     const cartCollection = client.db("summerCamp").collection("carts");
     const paymentCollection = client.db("summerCamp").collection("payments");
-    const reviewCollection = client
-      .db("summerCamp")
-      .collection("studentReviews");
+    const reviewCollection = client.db("summerCamp").collection("reviews");
 
     //  JWT TOKEN secure
     app.post("/jwt", async (req, res) => {
@@ -198,7 +196,7 @@ async function run() {
 
     // ---------------------------
 
-    /** cart collection for student ------------------ */
+    /** student all apis ------------------ */
 
     // get cart item from database
     app.get("/carts", async (req, res) => {
@@ -266,6 +264,19 @@ async function run() {
       res.send(result);
     });
 
+    // post your review
+    app.post("/give-review", async (req, res) => {
+      const body = req.body;
+      const result = await reviewCollection.insertOne(body);
+      res.send(result);
+    });
+
+    // get all users reviews
+    app.get("/user-review", async (req, res) => {
+      const result = await reviewCollection.find({}).toArray();
+      res.send(result);
+    });
+
     // /** Enrolled class apis */
     // app.get("/enrolled-class/:id", async (req, res) => {
     //   const id = req.params.id;
@@ -273,6 +284,8 @@ async function run() {
     //   const result = await classesCollection.findOne(query);
     //   res.send(result);
     // });
+
+    /** student all apis ------------------ */
 
     // -------- class related apis -----------
 
@@ -286,12 +299,6 @@ async function run() {
     });
 
     // -------------------------
-
-    /** reviews related apis */
-    app.get("/reviews", async (req, res) => {
-      const result = await reviewCollection.find({}).toArray();
-      res.send(result);
-    });
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
