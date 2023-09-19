@@ -145,13 +145,19 @@ async function run() {
     });
 
     // update add classes information
-    app.put("/update-class/:id", async (req, res) => {
+    app.patch("/update-class/:id", async (req, res) => {
       const id = req.params.id;
       const classData = req.body;
       const filter = { _id: new ObjectId(id) };
-      const updateDoc = { $set: { status: classData.status } };
-      const result = await classesCollection.updateOne(filter, updateDoc);
-      res.send(result);
+      const updateDoc = {
+        $set: {
+          status: classData.status,
+          available_seat: classData.available_seat,
+        },
+      };
+      const update = await classesCollection.updateOne(filter, updateDoc);
+      console.log(update);
+      res.send(update);
     });
 
     // get my classes
@@ -199,17 +205,24 @@ async function run() {
     /** student all apis ------------------ */
 
     // get cart item from database
-    app.get("/carts", async (req, res) => {
+    app.get("/get-cart/:email", async (req, res) => {
       const email = req.query.email;
-      if (!email) {
-        return res
-          .status(403)
-          .send({ error: true, message: "Forbidden Access" });
-      }
-      const query = { email: email };
+      const query = { student_email: email };
       const result = await cartCollection.find(query).toArray();
       res.send(result);
     });
+
+    app.get("/cart-item/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await cartCollection.findOne(query);
+      res.send(result);
+    });
+
+    /**
+     * _id, name, image, ins_name, email, price, seat, descrip, status
+     * classid, name, email, image, price
+     */
 
     // add cart in database
     app.post("/carts", async (req, res) => {
