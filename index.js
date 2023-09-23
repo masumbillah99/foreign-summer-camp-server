@@ -151,18 +151,39 @@ async function run() {
       const filter = { _id: new ObjectId(id) };
       const updateDoc = {
         $set: {
+          image: classData.image,
           available_seat: classData.available_seat,
+          description: classData.description,
+          duration: classData.duration,
+          courseFor: classData.courseFor,
+          coupon: classData.coupon,
+          status: classData.status,
         },
       };
       const update = await classesCollection.updateOne(filter, updateDoc);
+      console.log(update);
       res.send(update);
     });
 
     // get my classes
     app.get("/my-classes/:email", verifyJWT, async (req, res) => {
       const result = await classesCollection
-        .find({ email: req.params.email })
+        .find({ instructor_email: req.params.email })
         .toArray();
+      res.send(result);
+    });
+
+    // get my single classes
+    app.get("/my-single-class/:id", async (req, res) => {
+      const id = req.params.id;
+      // const email = req.query.email;
+      // if (!email) {
+      //   return res
+      //     .status(403)
+      //     .send({ error: true, message: "Forbidden Access" });
+      // }
+      const query = { _id: new ObjectId(id) };
+      const result = await classesCollection.findOne(query);
       res.send(result);
     });
 
@@ -259,9 +280,10 @@ async function run() {
 
       // delete cart items after payment
       const query = {
-        _id: new ObjectId(paymentData.item_id),
+        _id: new ObjectId(paymentData._id),
       };
       const deleteResult = await cartCollection.deleteOne(query);
+      // console.log(deleteResult);
       res.send({ insertResult, deleteResult });
     });
 
