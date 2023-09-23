@@ -81,7 +81,15 @@ async function run() {
       res.send(result);
     });
 
-    // check users ? admin
+    // delete a user
+    app.delete("/delete-user/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const result = await usersCollection.deleteOne(filter);
+      res.send(result);
+    });
+
+    // check user ? admin
     // email name
     // check admin
     app.get("/user-admin/:email", verifyJWT, async (req, res) => {
@@ -96,7 +104,7 @@ async function run() {
     });
 
     // make role admin
-    app.patch("/make-admin/:id", verifyJWT, async (req, res) => {
+    app.patch("/make-admin/:id", verifyJWT, verifyAdmin, async (req, res) => {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
       const updateDoc = { $set: { role: "admin" } };
@@ -113,29 +121,28 @@ async function run() {
       res.send(result);
     });
 
-    /** instructor roles */
-    // app.get("/make-instructor/:email", async (req, res) => {
-    //   const email = req.params.email;
-    //   // if (req.decoded.email !== email) {
-    //   //   res.send({ instructor: false });
-    //   // }
-    //   const query = { email: email };
-    //   const user = await usersCollection.findOne(query);
-    //   const result = { instructor: user?.role === "instructor" };
-    //   res.send(result);
-    // });
-
-    // delete a user
-    app.delete("/delete-user/:id", async (req, res) => {
-      const id = req.params.id;
-      const filter = { _id: new ObjectId(id) };
-      const result = await usersCollection.deleteOne(filter);
+    /** check user ? admin
+        check instructor roles
+    */
+    app.get("/user-instructor/:email", verifyJWT, async (req, res) => {
+      const email = req.params.email;
+      if (req.decoded.email !== email) {
+        res.send({ instructor: false });
+      }
+      const query = { email: email };
+      const user = await usersCollection.findOne(query);
+      const result = { instructor: user?.role === "instructor" };
       res.send(result);
     });
 
-    // ---------- admin apis ---------------
-
     // ----------- instructor apis -------------
+
+    /** get only instructors */
+    app.get("/all-instructors", async (req, res) => {
+      const query = { role: "instructor" };
+      const result = await usersCollection.find(query).toArray();
+      res.send(result);
+    });
 
     // save new class in database
     app.post("/add-class", async (req, res) => {
@@ -161,7 +168,6 @@ async function run() {
         },
       };
       const update = await classesCollection.updateOne(filter, updateDoc);
-      console.log(update);
       res.send(update);
     });
 
@@ -187,10 +193,20 @@ async function run() {
       res.send(result);
     });
 
-    /** get only instructors */
-    app.get("/all-instructors", async (req, res) => {
-      const query = { role: "instructor" };
-      const result = await usersCollection.find(query).toArray();
+    // get all class
+    app.get("/classes", async (req, res) => {
+      const query = {};
+      const options = { sort: { available_seat: -1 } };
+      const cursor = classesCollection.find(query, options);
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+
+    // delete a single class
+    app.delete("/delete-single-class/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const result = await classesCollection.deleteOne(filter);
       res.send(result);
     });
 
@@ -236,13 +252,6 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/cart-item/:id", async (req, res) => {
-      const id = req.params.id;
-      const query = { _id: new ObjectId(id) };
-      const result = await cartCollection.findOne(query);
-      res.send(result);
-    });
-
     // add cart in database
     app.post("/carts", async (req, res) => {
       const item = req.body;
@@ -283,7 +292,6 @@ async function run() {
         _id: new ObjectId(paymentData._id),
       };
       const deleteResult = await cartCollection.deleteOne(query);
-      // console.log(deleteResult);
       res.send({ insertResult, deleteResult });
     });
 
@@ -322,17 +330,6 @@ async function run() {
     // });
 
     /** student all apis ------------------ */
-
-    // -------- class related apis -----------
-
-    // get all class
-    app.get("/classes", async (req, res) => {
-      const query = {};
-      const options = { sort: { available_seat: -1 } };
-      const cursor = classesCollection.find(query, options);
-      const result = await cursor.toArray();
-      res.send(result);
-    });
 
     // -------------------------
 
